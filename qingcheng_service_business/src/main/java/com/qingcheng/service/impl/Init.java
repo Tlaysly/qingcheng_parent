@@ -13,6 +13,6 @@ public class Init implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        adService.saveAllAdToRedis();
+        adService.saveAllAdToRedis(); //将所有广告加入到缓存中
     }
 }

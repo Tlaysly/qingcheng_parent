@@ -60,4 +60,10 @@ public class SkuController {
         return new Result();
     }
 
+    @GetMapping("/importAllSkuToES")
+    public void save() throws Exception{
+        skuService.importAllSkuToES();
+    }
+
+
 }

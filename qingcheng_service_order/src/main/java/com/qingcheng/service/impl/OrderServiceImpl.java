@@ -2,6 +2,7 @@ package com.qingcheng.service.impl;
 import com.alibaba.dubbo.common.utils.CollectionUtils;
 import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.config.annotation.Service;
+import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.qingcheng.dao.OrderItemMapper;
@@ -12,14 +13,18 @@ import com.qingcheng.pojo.order.Order;
 import com.qingcheng.pojo.order.OrderItem;
 import com.qingcheng.pojo.order.OrderLog;
 import com.qingcheng.pojo.order.Orders;
+import com.qingcheng.service.goods.SkuService;
+import com.qingcheng.service.order.CartService;
 import com.qingcheng.service.order.OrderService;
 import com.qingcheng.util.IdWorker;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 import org.springframework.beans.BeanUtils;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service(interfaceClass = OrderService.class)
 public class OrderServiceImpl implements OrderService {
@@ -35,6 +40,15 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     OrderLogMapper orderLogMapper;
+
+    @Autowired
+    CartService cartService;
+
+    @Autowired
+    SkuService skuService;
+
+    @Autowired
+    RabbitTemplate rabbitTemplate;
 
     /**
      * 返回全部记录
@@ -243,11 +257,54 @@ public class OrderServiceImpl implements OrderService {
     }
 
     /**
-     * 新增
+     * 新增订单信息
      * @param order
      */
-    public void add(Order order) {
-        orderMapper.insert(order);
+    public Map<String,Object> add(Order order) {
+        List<Map<String, Object>> orderItemList = cartService.findNewOrderItemList(order.getUsername());
+        List<OrderItem> orderItems = orderItemList.stream().filter(cart -> (boolean) cart.get("checked")).map(cart -> (OrderItem) cart.get("item")).collect(Collectors.toList());
+        if(!skuService.deductionStock(orderItems)){
+            throw new RuntimeException("库存扣减失败~");
+        }
+        try {
+            //支付价格
+            int totalMoney = orderItems.stream().mapToInt(OrderItem::getMoney).sum();
+            //总数量
+            int totalNum = orderItems.stream().mapToInt(OrderItem::getNum).sum();
+            int preMoney = cartService.preferential(order.getUsername()); //优惠价格
+            //新增订单
+            order.setId(idWorker.nextId() + "");
+            order.setTotalNum(totalNum);
+            order.setTotalMoney(totalMoney);
+            order.setPreMoney(preMoney);
+            order.setPayMoney(totalMoney - preMoney);
+            order.setCreateTime(new Date());
+            order.setOrderStatus("0");
+            order.setPayStatus("0"); //未支付
+            order.setConsignStatus("0"); //发货状态：未发货
+            orderMapper.insert(order);
+
+            //新增订单明细
+            //获取到优惠比例
+            double proportion = (double) order.getPayMoney() / totalMoney;
+            for (OrderItem orderItem : orderItems) {
+                orderItem.setOrderId(order.getId());
+                orderItem.setId(idWorker.nextId() + "");
+                orderItem.setPayMoney((int) (orderItem.getMoney() * proportion));
+                orderItemMapper.insert(orderItem);
+            }
+            //清除购物车记录
+            cartService.deleteCheckedCart(order.getUsername());
+            //返回订单号和支付的金额
+            Map map = new HashMap();
+            map.put("ordersn", order.getId());
+            map.put("money", order.getPayMoney());
+            return map;
+        }catch (Exception e){
+            //如果过程有失败的数据，则会通过mq发送到sku表中进行回滚
+            rabbitTemplate.convertAndSend("","queue.skuback", JSON.toJSONString(orderItems));
+            throw new RuntimeException("订单生成失败");
+        }
     }
 
     /**

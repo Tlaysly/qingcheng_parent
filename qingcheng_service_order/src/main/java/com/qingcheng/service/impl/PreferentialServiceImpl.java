@@ -9,6 +9,7 @@ import com.qingcheng.service.order.PreferentialService;
 import org.springframework.beans.factory.annotation.Autowired;
 import tk.mybatis.mapper.entity.Example;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -17,6 +18,37 @@ public class PreferentialServiceImpl implements PreferentialService {
 
     @Autowired
     private PreferentialMapper preferentialMapper;
+
+    /**
+     * 根据分类和消费额查询优惠金额
+     * @param categoryId 分类id
+     * @param money 优惠金额
+     * @return
+     */
+    public int findPreMoneyByCategoryId(Integer categoryId,Integer money){
+        //搜索满足要求的数据
+        Example example = new Example(Preferential.class);
+        Example.Criteria criteria = example.createCriteria();
+        criteria.andEqualTo("state","1");
+        criteria.andEqualTo("categoryId",categoryId);
+        criteria.andLessThanOrEqualTo("buyMoney",money);
+        criteria.andGreaterThanOrEqualTo("endTime",new Date());
+        criteria.andLessThanOrEqualTo("startTime",new Date());
+        example.setOrderByClause("buy_money desc");
+        List<Preferential> preferentials = preferentialMapper.selectByExample(example);
+        if(preferentials.size() >= 1){
+            Preferential preferential = preferentials.get(0);
+            if(preferential.getType().equals("1")){
+                //不翻倍
+                return preferential.getPreMoney();
+            }else {
+                int  multiple = money / preferentials.get(0).getBuyMoney();
+                return preferential.getPreMoney() * multiple;
+            }
+        }else {
+            return 0;
+        }
+    }
 
     /**
      * 返回全部记录

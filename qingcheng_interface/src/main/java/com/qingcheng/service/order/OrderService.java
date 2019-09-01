@@ -21,7 +21,7 @@ public interface OrderService {
 
     Order findById(String[] ids);
 
-    void add(Order order);
+    Map<String,Object> add(Order order);
 
     void update(Order order);
 

@@ -32,4 +32,5 @@ public interface SpecService {
 
     public void delete(Integer id);
 
+    void findAllSpecToRedis();
 }

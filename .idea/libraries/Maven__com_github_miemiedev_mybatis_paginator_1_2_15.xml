@@ -1,13 +1,13 @@
 <component name="libraryTable">
   <library name="Maven: com.github.miemiedev:mybatis-paginator:1.2.15">
     <CLASSES>
-      <root url="jar://G:/apache-maven-3.5.2/jars/repository_boot/com/github/miemiedev/mybatis-paginator/1.2.15/mybatis-paginator-1.2.15.jar!/" />
+      <root url="jar://G:/apache-maven-3.6.1/maven_warehouse/repository_boot/com/github/miemiedev/mybatis-paginator/1.2.15/mybatis-paginator-1.2.15.jar!/" />
     </CLASSES>
     <JAVADOC>
-      <root url="jar://G:/apache-maven-3.5.2/jars/repository_boot/com/github/miemiedev/mybatis-paginator/1.2.15/mybatis-paginator-1.2.15-javadoc.jar!/" />
+      <root url="jar://G:/apache-maven-3.6.1/maven_warehouse/repository_boot/com/github/miemiedev/mybatis-paginator/1.2.15/mybatis-paginator-1.2.15-javadoc.jar!/" />
     </JAVADOC>
     <SOURCES>
-      <root url="jar://G:/apache-maven-3.5.2/jars/repository_boot/com/github/miemiedev/mybatis-paginator/1.2.15/mybatis-paginator-1.2.15-sources.jar!/" />
+      <root url="jar://G:/apache-maven-3.6.1/maven_warehouse/repository_boot/com/github/miemiedev/mybatis-paginator/1.2.15/mybatis-paginator-1.2.15-sources.jar!/" />
     </SOURCES>
   </library>
 </component>

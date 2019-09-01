@@ -1,22 +1,87 @@
 package com.qingcheng.service.impl;
 import com.alibaba.dubbo.config.annotation.Service;
+import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.qingcheng.dao.UserMapper;
 import com.qingcheng.entity.PageResult;
 import com.qingcheng.pojo.user.User;
 import com.qingcheng.service.user.UserService;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import tk.mybatis.mapper.entity.Example;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    RedisTemplate redisTemplate;
+
+    @Autowired
+    RabbitTemplate rabbitTemplate;
+
+    /**
+     * 增加用户
+     * @param user 用户信息
+     * @param smsCode 验证码
+     */
+    public void add(User user,String smsCode){
+        String sysCode = (String) redisTemplate.boundValueOps("code_" + user.getPhone()).get();
+        if(sysCode == null){
+            throw new RuntimeException("验证码未发送或已过期");
+        }
+        if(!smsCode.equals(sysCode)){
+            throw new RuntimeException("验证码不正确");
+        }
+        if(user.getUsername() == null){
+            user.setUsername(user.getPhone());
+        }
+        User searchUser = new User();
+        searchUser.setUsername(user.getUsername());
+        if(userMapper.selectCount(searchUser) > 0){
+            throw new RuntimeException("该手机号已注册");
+        }
+        //保存账户
+        user.setCreated(new Date());
+        user.setUpdated(new Date());
+        user.setPoints(0);
+        user.setStatus("1");
+        user.setIsEmailCheck("0");
+        user.setIsMobileCheck("1");
+
+        userMapper.insert(user);
+    }
+
+    /**
+     * 发送短信验证码
+     * @param phone 手机号码
+     */
+    public void sendSms(String phone){
+        //产生6位随机验证码
+        int max = 999999;
+        int min = 100000;
+        Random random = new Random();
+        int code = random.nextInt(max);
+        if(code < min){
+            code = min + code;
+        }
+        //保存到redis中
+        redisTemplate.boundValueOps("code_" + phone).set(code + "");
+        redisTemplate.boundValueOps("code_" + phone).expire(5, TimeUnit.MINUTES); //有限时间5分钟
+
+        //发送给mq
+        Map<String,String> map = new HashMap<>();
+        map.put("code",code + "");
+        map.put("phone",phone);
+        rabbitTemplate.convertAndSend("","queue.sms", JSON.toJSONString(map));
+    }
 
     /**
      * 返回全部记录

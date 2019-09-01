@@ -13,9 +13,6 @@ public class Category implements Serializable{
 	@Id
 	private Integer id;//分类ID
 
-
-	
-
 	private String name;//分类名称
 
 	private Integer goodsNum;//商品数量

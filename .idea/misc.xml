@@ -4,11 +4,16 @@
     <file type="web" url="file://$PROJECT_DIR$/qingcheng_service_business" />
     <file type="web" url="file://$PROJECT_DIR$/qingcheng_service_config" />
     <file type="web" url="file://$PROJECT_DIR$/qingcheng_service_goods" />
+    <file type="web" url="file://$PROJECT_DIR$/qingcheng_service_index" />
     <file type="web" url="file://$PROJECT_DIR$/qingcheng_service_order" />
+    <file type="web" url="file://$PROJECT_DIR$/qingcheng_service_page" />
+    <file type="web" url="file://$PROJECT_DIR$/qingcheng_service_sms" />
     <file type="web" url="file://$PROJECT_DIR$/qingcheng_service_system" />
     <file type="web" url="file://$PROJECT_DIR$/qingcheng_service_user" />
+    <file type="web" url="file://$PROJECT_DIR$/qingcheng_web_center" />
     <file type="web" url="file://$PROJECT_DIR$/qingcheng_web_manager" />
     <file type="web" url="file://$PROJECT_DIR$/qingcheng_web_portal" />
+    <file type="web" url="file://$PROJECT_DIR$/../rest" />
   </component>
   <component name="JavaScriptSettings">
     <option name="languageLevel" value="JSX" />
@@ -18,6 +23,7 @@
       <list>
         <option value="$PROJECT_DIR$/pom.xml" />
         <option value="$PROJECT_DIR$/qingcheng_service_search/pom.xml" />
+        <option value="$PROJECT_DIR$/../rest/pom.xml" />
       </list>
     </option>
   </component>

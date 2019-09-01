@@ -1,4 +1,5 @@
 package com.qingcheng.service.impl;
+
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
@@ -24,6 +25,19 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Autowired
     RedisTemplate redisTemplate;
+
+    /**
+     * 将所有sku分类保存到redis
+     */
+    @Override
+    public void findAllCategoryToRedis() {
+        List<Map> categoryList = categoryMapper.findAllCategoryToRedis();
+        if(!redisTemplate.hasKey(CacheKey.SPEC_SEARCH)){ //判断缓存中是否有数据
+            for (Map categoryMap : categoryList) {
+                redisTemplate.boundHashOps(CacheKey.CATEGORY).put(categoryMap.get("categoryName"),categoryMap.get("brandName"));
+            }
+        }
+    }
 
     /**
      * 返回全部记录

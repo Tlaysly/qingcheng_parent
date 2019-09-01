@@ -12,6 +12,7 @@
 </head>
 
 <body>
+<div id="app">
 	<!-- 头部栏位 -->
 	<!--页面顶部-->
 	<div id="nav-bottom">
@@ -22,8 +23,13 @@
 					<div class="shortcut">
 						<ul class="fl">
 							<li class="f-item">青橙欢迎您！</li>
-							<li class="f-item">请
-								<a href="login.html" target="_blank">登录</a>
+							<li class="f-item">
+								<span v-if="username==''">
+									请<a href="login.html">登录</a>
+								</span>
+								<span v-if="username!=''">
+									{{username}}  <a href="/logout/cas">退出登录</a>
+								</span>
 								<span>
 									<a href="register.html" target="_blank">免费注册</a>
 								</span>
@@ -65,7 +71,7 @@
 									</span>
 								</li>
 								<li class="f-item">
-									<span>网站导航</li>
+									<span>网站导航</span></li>
 							</ul>
 						</div>
 
@@ -82,7 +88,7 @@
 						</div>
 						<div class="yui3-u Rit searchArea">
 							<div class="search">
-								<form action="" class="sui-form form-inline">
+								<form action="/search.do" class="sui-form form-inline">
 									<!--searchAutoComplete-->
 									<div class="input-append">
 										<input type="text" id="autocomplete" class="input-error input-xxlarge" />
@@ -1352,10 +1358,30 @@
 
 		</div>
 	</div>
+</div>
 
 	<script type="text/javascript" src="./js/all.js"></script>
 	<script type="text/javascript" src="./js/plugins/jquery/jquery.min.js"></script>
 	<script type="text/javascript" src="./js/pages/index.js"></script>
-</body>
 
+	<!--页面底部END-->
+	<script src="js/vue.js"></script>
+	<script src="js/axios.js"></script>
+<script>
+
+		new Vue({
+			el:'#app',
+			data(){
+				return {
+					username:""
+				}
+			},
+			created(){
+				axios.get(`/login/username.do`).then( response=>{
+					this.username=response.data.username;
+				})
+			}
+		});
+	</script>
+</body>
 </html>
