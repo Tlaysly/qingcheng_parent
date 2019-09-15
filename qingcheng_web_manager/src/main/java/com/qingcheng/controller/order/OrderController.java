@@ -38,8 +38,8 @@ public class OrderController {
     }
 
     @GetMapping("/findById")
-    public Order findById(String[] ids ){
-        return orderService.findById(ids);
+    public Order findById(String id ){
+        return orderService.findById(id);
     }
 
     @PostMapping("/add")

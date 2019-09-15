@@ -7,8 +7,12 @@ import java.io.Serializable;
  */
 public class Result implements Serializable {
 
-    private int code;//返回的业务码  0：成功执行  1：发生错误
-    private String message;//信息
+    //返回的业务码  0：成功执行  1：发生错误
+    private int code;
+    //信息
+    private String message;
+    //接受对象
+    private Object other;
 
     public Result(int code, String message) {
         this.code = code;
@@ -16,8 +20,6 @@ public class Result implements Serializable {
     }
 
     public Result() {
-        this.code=0;
-        this.message = "执行成功";
     }
 
     public int getCode() {
@@ -34,5 +36,13 @@ public class Result implements Serializable {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public Object getOther() {
+        return other;
+    }
+
+    public void setOther(Object other) {
+        this.other = other;
     }
 }

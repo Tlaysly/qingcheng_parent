@@ -1,15 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<module type="JAVA_MODULE" version="4">
-  <component name="ExternalSystem" externalSystem="Maven" />
+<module org.jetbrains.idea.maven.project.MavenProjectsManager.isMavenModule="true" type="JAVA_MODULE" version="4">
   <component name="FacetManager">
-    <facet type="Spring" name="Spring">
-      <configuration>
-        <fileset id="fileset" name="ApplicationContext_security" removed="false">
-          <file>file://$MODULE_DIR$/src/main/resources/applicationContext_security.xml</file>
-          <file>file://$MODULE_DIR$/src/main/java/com/qingcheng/controller/SecurityConfiguration.java</file>
-        </fileset>
-      </configuration>
-    </facet>
     <facet type="web" name="Web">
       <configuration>
         <descriptors>
@@ -19,6 +10,9 @@
           <root url="file://$MODULE_DIR$/src/main/webapp" relative="/" />
         </webroots>
       </configuration>
+    </facet>
+    <facet type="Spring" name="Spring">
+      <configuration />
     </facet>
   </component>
   <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_8">

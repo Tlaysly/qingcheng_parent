@@ -1,16 +1,18 @@
 package com.qingcheng.service.impl;
+import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.qingcheng.dao.OrderItemMapper;
-import com.qingcheng.dao.OrderMapper;
 import com.qingcheng.entity.PageResult;
-import com.qingcheng.pojo.order.Order;
 import com.qingcheng.pojo.order.OrderItem;
+import com.qingcheng.service.goods.SpuService;
 import com.qingcheng.service.order.OrderItemService;
+import com.qingcheng.service.order.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import tk.mybatis.mapper.entity.Example;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -19,6 +21,60 @@ public class OrderItemServiceImpl implements OrderItemService {
 
     @Autowired
     private OrderItemMapper orderItemMapper;
+
+    @Reference
+    private OrderService orderService;
+
+    @Reference
+    private SpuService spuService;
+
+    /**
+     * 根据用户名查询未付款订单
+     * @param username
+     * @return
+     */
+    @Override
+    public List<Map> getPayment(String username){
+        List<Map<String, Object>> mapList = orderItemMapper.findByOrderId(username);
+        List<Map> list = new ArrayList<>();
+        for (Map<String, Object> map : mapList) {
+            //0表示未付款
+            if("0".equals(map.get("payStatus"))){
+                list.add(map);
+            }
+        }
+        return list;
+    }
+
+    /**
+     * 根据orderId查询订单明细
+     * @param oderId
+     * @return
+     */
+    @Override
+    public List<Map> findOrderAndItem(String oderId){
+        List<Map> list = new ArrayList<>();
+        List<Map<String,Object>> maps = orderItemMapper.findOrderAndItem(oderId);
+        for (Map<String, Object> map : maps) {
+            list.add(map);
+        }
+        return list;
+    }
+
+    /**
+     * 根据用户名称查询订单明细
+     * @param username
+     * @return
+     */
+    @Override
+    public List<Map> findOrders(String username) {
+        List<Map> list = new ArrayList<>();
+        List<Map<String, Object>> maps = orderItemMapper.findByOrderId(username);
+        for (Map<String, Object> map : maps) {
+            list.add(map);
+        }
+        return list;
+    }
 
     /**
      * 返回全部记录

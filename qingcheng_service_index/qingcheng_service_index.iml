@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module org.jetbrains.idea.maven.project.MavenProjectsManager.isMavenModule="true" type="JAVA_MODULE" version="4">
   <component name="FacetManager">
-    <facet type="Spring" name="Spring">
-      <configuration />
-    </facet>
     <facet type="web" name="Web">
       <configuration>
         <descriptors>
@@ -17,6 +14,9 @@
           <root url="file://$MODULE_DIR$/src/main/resources" />
         </sourceRoots>
       </configuration>
+    </facet>
+    <facet type="Spring" name="Spring">
+      <configuration />
     </facet>
   </component>
   <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_8">
@@ -77,7 +77,6 @@
     <orderEntry type="library" name="Maven: org.apache.logging.log4j:log4j-api:2.11.1" level="project" />
     <orderEntry type="library" name="Maven: org.elasticsearch:jna:4.5.1" level="project" />
     <orderEntry type="library" name="Maven: org.elasticsearch.client:elasticsearch-rest-client:6.5.2" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpclient:4.5.2" level="project" />
     <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpcore:4.4.5" level="project" />
     <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpasyncclient:4.1.2" level="project" />
     <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpcore-nio:4.4.5" level="project" />
@@ -152,6 +151,7 @@
     <orderEntry type="library" name="Maven: org.springframework.data:spring-data-keyvalue:2.0.5.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.springframework.data:spring-data-commons:2.0.5.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.springframework:spring-oxm:5.0.4.RELEASE" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.httpcomponents:httpclient:4.5.7" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: javax.servlet:servlet-api:2.5" level="project" />
   </component>
 </module>

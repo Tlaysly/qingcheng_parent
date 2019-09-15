@@ -19,7 +19,9 @@ public interface OrderService {
 
     PageResult<Order> findPage(Map<String, Object> searchMap, int page, int size);
 
-    Order findById(String[] ids);
+    Order findByIds(String[] ids);
+
+    Order findById(String id);
 
     Map<String,Object> add(Order order);
 
@@ -34,4 +36,9 @@ public interface OrderService {
     Order merge(Map<String,String> map);
 
     void split(List<HashMap<String,Integer>> splitList);
+
+    void  updatePayStatus(String orderId,String transactionId);
+
+    void closeOrder(String id);
+
 }

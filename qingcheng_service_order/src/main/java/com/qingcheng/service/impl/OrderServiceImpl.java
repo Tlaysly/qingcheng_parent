@@ -1,6 +1,7 @@
 package com.qingcheng.service.impl;
-import com.alibaba.dubbo.common.utils.CollectionUtils;
+
 import com.alibaba.dubbo.common.utils.StringUtils;
+import com.alibaba.dubbo.config.annotation.Reference;
 import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.fastjson.JSON;
 import com.github.pagehelper.Page;
@@ -16,7 +17,10 @@ import com.qingcheng.pojo.order.Orders;
 import com.qingcheng.service.goods.SkuService;
 import com.qingcheng.service.order.CartService;
 import com.qingcheng.service.order.OrderService;
+import com.qingcheng.service.pay.WxPayService;
 import com.qingcheng.util.IdWorker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,8 +30,11 @@ import org.springframework.beans.BeanUtils;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("all")
 @Service(interfaceClass = OrderService.class)
 public class OrderServiceImpl implements OrderService {
+
+    Logger logger = LoggerFactory.getLogger(OrderServiceImpl.class);
 
     @Autowired
     private OrderMapper orderMapper;
@@ -44,16 +51,70 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     CartService cartService;
 
-    @Autowired
+    @Reference
     SkuService skuService;
 
     @Autowired
     RabbitTemplate rabbitTemplate;
+    /**
+     * 修改订单信息
+     */
+    @Override
+    public void closeOrder(String id){
+        System.out.println("订单超时自动关闭");
+        Order order = orderMapper.selectByPrimaryKey(id);
+       if(order == null){
+           throw new RuntimeException("未查到订单信息~");
+       }
+        //修改订单信息
+        order.setPayStatus("0");
+        order.setOrderStatus("0");
+        order.setUpdateTime(new Date());
+        order.setCloseTime(new Date());
+        orderMapper.updateByPrimaryKey(order);
+        //记录订单变动日志
+        OrderLog orderLog=new OrderLog();
+        orderLog.setOperater("system");
+        orderLog.setOperateTime(new Date());
+        orderLog.setOrderStatus("0");
+        orderLog.setPayStatus("0");
+        orderLog.setOrderId(order.getId());
+        orderLogMapper.insert(orderLog);
+    }
+
+    /**
+     * 修改订单状态
+     * @param orderId
+     * @param transactionId
+     */
+    @Override
+    @Transactional
+    public void updatePayStatus(String orderId,String transactionId){
+        Order order = orderMapper.selectByPrimaryKey(orderId);
+        if(order != null && "0".equals(order.getPayStatus())){
+            order.setPayStatus("1");
+            order.setOrderStatus("1");
+            order.setUpdateTime(new Date());
+            order.setPayTime(new Date());
+            order.setTransactionId(transactionId); //微信返回的交易流水号
+            orderMapper.updateByPrimaryKeySelective(order);
+            //记录订单变动日志
+            OrderLog orderLog=new OrderLog();
+            orderLog.setOperater("system");
+            orderLog.setOperateTime(new Date());
+            orderLog.setOrderStatus("1");
+            orderLog.setPayStatus("1");
+            orderLog.setRemarks("支付流水号"+transactionId);
+            orderLog.setOrderId(order.getId());
+            orderLogMapper.insert(orderLog);
+        }
+    }
 
     /**
      * 返回全部记录
      * @return
      */
+    @Override
     public List<Order> findAll() {
         return orderMapper.selectAll();
     }
@@ -64,6 +125,7 @@ public class OrderServiceImpl implements OrderService {
      * @param size 每页记录数
      * @return 分页结果
      */
+    @Override
     public PageResult<Order> findPage(int page, int size) {
         PageHelper.startPage(page,size);
         Page<Order> orders = (Page<Order>) orderMapper.selectAll();
@@ -75,6 +137,7 @@ public class OrderServiceImpl implements OrderService {
      * @param searchMap 查询条件
      * @return
      */
+    @Override
     public List<Order> findList(Map<String, Object> searchMap) {
         Example example = createExample(searchMap);
         return orderMapper.selectByExample(example);
@@ -87,6 +150,7 @@ public class OrderServiceImpl implements OrderService {
      * @param size
      * @return
      */
+    @Override
     public PageResult<Order> findPage(Map<String, Object> searchMap, int page, int size) {
         PageHelper.startPage(page,size);
         Example example = createExample(searchMap);
@@ -99,6 +163,7 @@ public class OrderServiceImpl implements OrderService {
      * @param id
      * @return
      */
+    @Override
     public Orders findByOrderId(String id) {
         Order order = orderMapper.selectByPrimaryKey(id);
 
@@ -120,11 +185,12 @@ public class OrderServiceImpl implements OrderService {
      * @param ids
      * @return
      */
-    public Order findById(String[] ids){
-        if(CollectionUtils.isEmpty(Arrays.asList(ids))){
-            throw new RuntimeException("你输入的订单id为空");
-        }
+    @Override
+    public Order findByIds(String[] ids){
         for (String id : ids) {
+            if(StringUtils.isEmpty(id)){
+                throw new RuntimeException("你输入的订单id为空");
+            }
             Order order = orderMapper.selectByPrimaryKey(id);
             if (order.getConsignStatus().equals("0")) {
                 return order;
@@ -133,10 +199,16 @@ public class OrderServiceImpl implements OrderService {
         return null;
     }
 
+    @Override
+    public Order findById(String id){
+        return orderMapper.selectByPrimaryKey(id);
+    }
+
     /**
      * 前端传递参数，后端将发货状态改为已发货并记录日志信息 批量发货
      * @param map
      */
+    @Override
     public void updateOrder(Map<String,String> map){
        if(map == null || map.size() == 0){
            throw new RuntimeException("你输入的信息为空");
@@ -177,6 +249,7 @@ public class OrderServiceImpl implements OrderService {
      * @param mergeMap
      */
     @Transactional
+    @Override
     public Order merge(Map<String,String> mergeMap){
         if(StringUtils.isEmpty(mergeMap.get("orderId1")) && StringUtils.isEmpty(mergeMap.get("orderId2"))){
             throw new RuntimeException("请输入正确的订单id");
@@ -227,6 +300,7 @@ public class OrderServiceImpl implements OrderService {
      * @param splitList
      * @return
      */
+    @Override
     public void split(List<HashMap<String,Integer>> splitList){
         if(splitList == null || splitList.size() == 0){
             throw new RuntimeException("请输入要拆分的数量");
@@ -260,6 +334,7 @@ public class OrderServiceImpl implements OrderService {
      * 新增订单信息
      * @param order
      */
+    @Override
     public Map<String,Object> add(Order order) {
         List<Map<String, Object>> orderItemList = cartService.findNewOrderItemList(order.getUsername());
         List<OrderItem> orderItems = orderItemList.stream().filter(cart -> (boolean) cart.get("checked")).map(cart -> (OrderItem) cart.get("item")).collect(Collectors.toList());
@@ -284,33 +359,38 @@ public class OrderServiceImpl implements OrderService {
             order.setConsignStatus("0"); //发货状态：未发货
             orderMapper.insert(order);
 
-            //新增订单明细
+            //发送商品id到mq，用于检验商品是否过期
+            rabbitTemplate.convertAndSend("","queue.ordercreate",JSON.toJSONString(order.getId()));
+
             //获取到优惠比例
             double proportion = (double) order.getPayMoney() / totalMoney;
+            //新增订单明细
             for (OrderItem orderItem : orderItems) {
                 orderItem.setOrderId(order.getId());
                 orderItem.setId(idWorker.nextId() + "");
                 orderItem.setPayMoney((int) (orderItem.getMoney() * proportion));
                 orderItemMapper.insert(orderItem);
             }
-            //清除购物车记录
-            cartService.deleteCheckedCart(order.getUsername());
-            //返回订单号和支付的金额
-            Map map = new HashMap();
-            map.put("ordersn", order.getId());
-            map.put("money", order.getPayMoney());
-            return map;
         }catch (Exception e){
             //如果过程有失败的数据，则会通过mq发送到sku表中进行回滚
             rabbitTemplate.convertAndSend("","queue.skuback", JSON.toJSONString(orderItems));
-            throw new RuntimeException("订单生成失败");
+
+            logger.error("购物车清除失败，订单号：" + order.getId() + "用户名：" + order.getUsername() + "购物车列表：" + JSON.toJSONString(orderItems));
         }
+        //清除购物车记录
+        cartService.deleteCheckedCart(order.getUsername());
+        //返回订单号和支付的金额
+        Map map = new HashMap();
+        map.put("ordersn", order.getId());
+        map.put("money", order.getPayMoney());
+        return map;
     }
 
     /**
      * 修改
      * @param order
      */
+    @Override
     public void update(Order order) {
         orderMapper.updateByPrimaryKeySelective(order);
     }
@@ -319,6 +399,7 @@ public class OrderServiceImpl implements OrderService {
      *  删除
      * @param id
      */
+    @Override
     public void delete(String id) {
         orderMapper.deleteByPrimaryKey(id);
     }

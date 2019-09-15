@@ -69,7 +69,7 @@ public class SkuServiceImpl implements SkuService {
         //执行满减
         if(idDeduction){
             for (OrderItem orderItem : orderItemList) {
-                skuMapper.deductionStock(orderItem.getId(),orderItem.getNum());
+                skuMapper.deductionStock(orderItem.getSkuId(),orderItem.getNum());
                 skuMapper.addSaleNum(orderItem.getSkuId(),orderItem.getNum());
             }
         }

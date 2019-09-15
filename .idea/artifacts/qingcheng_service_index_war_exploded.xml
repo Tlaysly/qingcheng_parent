@@ -61,7 +61,6 @@
           <element id="library" level="project" name="Maven: org.apache.logging.log4j:log4j-api:2.11.1" />
           <element id="library" level="project" name="Maven: org.elasticsearch:jna:4.5.1" />
           <element id="library" level="project" name="Maven: org.elasticsearch.client:elasticsearch-rest-client:6.5.2" />
-          <element id="library" level="project" name="Maven: org.apache.httpcomponents:httpclient:4.5.2" />
           <element id="library" level="project" name="Maven: org.apache.httpcomponents:httpcore:4.4.5" />
           <element id="library" level="project" name="Maven: org.apache.httpcomponents:httpasyncclient:4.1.2" />
           <element id="library" level="project" name="Maven: org.apache.httpcomponents:httpcore-nio:4.4.5" />
@@ -126,6 +125,7 @@
           <element id="library" level="project" name="Maven: org.springframework.data:spring-data-keyvalue:2.0.5.RELEASE" />
           <element id="library" level="project" name="Maven: org.springframework.data:spring-data-commons:2.0.5.RELEASE" />
           <element id="library" level="project" name="Maven: org.springframework:spring-oxm:5.0.4.RELEASE" />
+          <element id="library" level="project" name="Maven: org.apache.httpcomponents:httpclient:4.5.7" />
         </element>
       </element>
       <element id="directory" name="META-INF">
